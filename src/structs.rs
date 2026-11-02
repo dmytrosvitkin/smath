@@ -1,8 +1,14 @@
+use crate::utils::{is_valid_f32, rem_euclid_f32};
+
 pub struct Value<T:Copy>{
     pub(crate)value:Option<T>
 }
 
 impl<T:Copy>Value<T>{
+    pub const fn none()->Self{
+        Self{value:None}
+    }
+
     pub const fn from(value:Option<T>)->Self{
         Self{value}
     }
@@ -48,6 +54,10 @@ pub struct Angle<T:Copy>{
 }
 
 impl<T:Copy>Angle<T>{
+    pub const fn none()->Self{
+        Self{angle:Value::none()}
+    }
+
     pub const fn from_scaled(scaled_angle:Option<T>)->Self{
         Self{angle:Value::from(scaled_angle)}
     }
@@ -79,5 +89,16 @@ impl<T:Copy>Angle<T>{
 
     pub const fn to_value_scaled(&self)->Value<T>{
         Value::from(self.scaled_angle())
+    }
+}
+
+impl Angle<u16>{
+    pub const fn from_degrees(degrees:u16)->Self{
+        Angle::from_scaled_unwrapped(((degrees.rem_euclid(360) as f32/360.0)*u16::MAX as f32)as u16)
+    }
+
+    pub const fn from_f32_degrees(degrees:f32)->Self{
+        if!is_valid_f32(degrees){return Angle::none()}
+        Angle::from_scaled_unwrapped((rem_euclid_f32(degrees,360.0)*(u16::MAX as f32/360.0))as u16)
     }
 }

@@ -1,6 +1,7 @@
 #![no_std]
 
 mod structs;
+    pub use structs::*;
 
 pub mod generic;
     pub use generic::*;
@@ -16,3 +17,5 @@ pub mod vector;
 
 pub mod matrix;
     pub use matrix::*;
+
+mod utils;
