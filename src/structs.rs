@@ -38,12 +38,6 @@ impl<T:Copy>Value<T>{
         self.value().unwrap_or_else(or_else)
     }
 
-    /*
-    pub const fn value_unwrapped_or_0(&self)->T{
-        self.value_unwrapped_or(type_zero)
-    }
-    */
-
     pub const fn to_scaled_angle(&self)->Angle<T>{
         Angle::from_scaled(self.value())
     }
@@ -100,5 +94,23 @@ impl Angle<u16>{
     pub const fn from_f32_degrees(degrees:f32)->Self{
         if!is_valid_f32(degrees){return Angle::none()}
         Angle::from_scaled_unwrapped((rem_euclid_f32(degrees,360.0)*(u16::MAX as f32/360.0))as u16)
+    }
+}
+
+pub struct Unit<T:Copy>{
+    unit:Value<T>
+}
+
+impl<T:Copy>Unit<T>{
+    pub const fn none()->Self{
+        Self{unit:Value::none()}
+    }
+
+    pub const fn from_raw(raw_unit:Option<T>)->Self{
+        Self{unit:Value::from(raw_unit)}
+    }
+
+    pub const fn from_raw_unwrapped(raw_unwrapped_unit:T)->Self{
+        Self{unit:Value::from_unwrapped(raw_unwrapped_unit)}
     }
 }
