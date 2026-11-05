@@ -76,3 +76,9 @@ fn scaled_angle_test(){
 
 #[test]
 fn value_angle_test(){}
+
+#[test]
+fn unit_test(){}
+
+#[test]
+fn value_unit_test(){}
