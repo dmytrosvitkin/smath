@@ -78,7 +78,10 @@ fn scaled_angle_test(){
 fn value_angle_test(){}
 
 #[test]
-fn unit_test(){}
+fn unit_test(){
+    let u:Unit<u128>=Unit::<u128>::from_f32_unit_soft(0.123);
+    println!("{}",u.as_f32())
+}
 
 #[test]
 fn value_unit_test(){}

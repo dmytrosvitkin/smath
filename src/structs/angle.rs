@@ -1,7 +1,7 @@
 use crate::utils::{is_valid_f32, rem_euclid_f32};
 use super::value::Value;
 
-pub struct Angle<T:Copy>{
+pub struct Angle<T:Copy=i64>{
     pub(crate)angle:Value<T>
 }
 

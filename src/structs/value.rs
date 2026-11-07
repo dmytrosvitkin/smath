@@ -1,7 +1,7 @@
 use super::angle::Angle;
 use super::unit::Unit;
 
-pub struct Value<T:Copy>{
+pub struct Value<T:Copy=i64>{
     pub(crate)value:Option<T>
 }
 
