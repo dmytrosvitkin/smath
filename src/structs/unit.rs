@@ -113,3 +113,61 @@ macro_rules!impl_unit_unsigned{
 }
 
 impl_unit_unsigned!(u8,u16,u32,u64,usize);// `u128` excluded, and will have its own logic
+
+impl Unit<u128>{
+    pub const fn from_f32_unit_unchecked(unit:f32)->Self{
+        Self::from_f64_unit_unchecked(unit as f64)
+    }
+
+    pub const fn from_f32_unit(unit:f32)->Self{
+        if!is_valid_f32(unit)||unit<0.0||unit>1.0{return Self::none()}
+        Self::from_f32_unit_unchecked(unit)
+    }
+
+    pub const fn from_f32_unit_soft(unit:f32)->Self{
+        if unit.is_nan(){return Self::none()}
+        Self::from_f32_unit_unchecked(unit.clamp(0.0,1.0))
+    }
+
+    pub const fn as_f32_unchecked(&self)->f32{
+        self.as_f64_unchecked()as f32
+    }
+
+    pub const fn as_f32(&self)->f32{
+        if self.is_none(){return f32::NAN}
+        self.as_f32_unchecked()
+    }
+
+    pub const fn as_option_f32(&self)->Option<f32>{
+        if self.is_none(){return None}
+        Some(self.as_f32_unchecked())
+    }
+
+    pub const fn from_f64_unit_unchecked(unit:f64)->Self{
+        Self::from_scaled_unwrapped((unit*u128::MAX as f64)as u128)
+    }
+
+    pub const fn from_f64_unit(unit:f64)->Self{
+        if!is_valid_f64(unit)||unit<0.0||unit>1.0{return Self::none()}
+        Self::from_f64_unit_unchecked(unit)
+    }
+
+    pub const fn from_f64_unit_soft(unit:f64)->Self{
+        if unit.is_nan(){return Self::none()}
+        Self::from_f64_unit_unchecked(unit.clamp(0.0,1.0))
+    }
+
+    pub const fn as_f64_unchecked(&self)->f64{
+        self.scaled_unit_unwrapped()as f64/u128::MAX as f64
+    }
+
+    pub const fn as_f64(&self)->f64{
+        if self.is_none(){return f64::NAN}
+        self.as_f64_unchecked()
+    }
+
+    pub const fn as_option_f64(&self)->Option<f64>{
+        if self.is_none(){return None}
+        Some(self.as_f64_unchecked())
+    }
+}
