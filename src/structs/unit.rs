@@ -1,5 +1,10 @@
+use crate::utils::is_valid_f32;
+
 use super::value::Value;
 
+/// Unit is a decimal number in range of `[-1; 1]` or `[0; 1]` depending on the type given: 
+/// - `[0; 1]` for unsigned numerical types: `u8`, `u16`, `u32`, `u64`, `u128`, `usize`;
+/// - `[-1; 1]` for integer and float numerical types: `i8`, `i16`, `i32`, `i64`, `i128`, `isize`, `f32`, `f64`.
 pub struct Unit<T:Copy>{
     unit:Value<T>
 }
@@ -40,5 +45,35 @@ impl<T:Copy>Unit<T>{
 
     pub const fn to_scaled_value(&self)->Value<T>{
         Value::from(self.scaled_unit())
+    }
+}
+
+impl Unit<u16>{
+    pub const fn from_f32_unit_unchecked(unit:f32)->Self{
+        Self::from_scaled_unwrapped((unit*u16::MAX as f32)as u16)
+    }
+
+    pub const fn from_f32_unit(unit:f32)->Self{
+        if!is_valid_f32(unit)||unit<0.0||unit>1.0{return Self::none()}
+        Self::from_f32_unit_unchecked(unit)
+    }
+
+    pub const fn from_f32_unit_soft(unit:f32)->Self{
+        if unit.is_nan(){return Self::none()}
+        Self::from_f32_unit_unchecked(unit.clamp(0.0,1.0))
+    }
+
+    pub const fn as_f32_unchecked(&self)->f32{
+        self.scaled_unit_unwrapped()as f32/u16::MAX as f32
+    }
+
+    pub const fn as_f32(&self)->f32{
+        if self.is_none(){return f32::NAN}
+        self.as_f32_unchecked()
+    }
+
+    pub const fn as_option_f32(&self)->Option<f32>{
+        if self.is_none(){return None}
+        Some(self.as_f32_unchecked())
     }
 }

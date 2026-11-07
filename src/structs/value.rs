@@ -42,4 +42,8 @@ impl<T:Copy>Value<T>{
     pub const fn to_scaled_angle(&self)->Angle<T>{
         Angle::from_scaled(self.value())
     }
+
+    pub const fn to_scaled_unit(&self)->Unit<T>{
+        Unit::from_scaled(self.value())
+    }
 }
