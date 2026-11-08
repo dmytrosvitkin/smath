@@ -6,3 +6,7 @@ description = "Lightweight, optimized mathematical utilities with zero dependenc
 license = "BSD-3-Clause"
 repository = "https://github.com/Dmytro-Svitkin/smath"
 [dependencies]
+
+[features]
+default = []
+symmetric-integer-unit-map = []

@@ -171,3 +171,91 @@ impl Unit<u128>{
         Some(self.as_f64_unchecked())
     }
 }
+
+impl Unit<i16>{
+    pub const fn from_f32_unit_unchecked(unit:f32)->Self{
+        #[cfg(feature="symmetric-integer-unit-map")]
+        {Self::from_scaled_unwrapped((unit*i16::MAX as f32)as i16)}
+
+        #[cfg(not(feature="symmetric-integer-unit-map"))]
+        {
+            if unit<0.0{Self::from_scaled_unwrapped((-unit*i16::MIN as f32)as i16)}
+            else{Self::from_scaled_unwrapped((unit*i16::MAX as f32)as i16)}
+        }
+    }
+
+    pub const fn from_f32_unit(unit:f32)->Self{
+        if!is_valid_f32(unit)||unit< -1.0||unit>1.0{return Self::none()}
+        Self::from_f32_unit_unchecked(unit)
+    }
+
+    pub const fn from_f32_unit_soft(unit:f32)->Self{
+        if unit.is_nan(){return Self::none()}
+        Self::from_f32_unit_unchecked(unit.clamp(-1.0,1.0))
+    }
+
+    pub const fn as_f32_unchecked(&self)->f32{
+        #[cfg(feature="symmetric-integer-unit-map")]
+        {self.scaled_unit_unwrapped()as f32/i16::MAX as f32}
+
+        #[cfg(not(feature="symmetric-integer-unit-map"))]
+        {
+            let self_scaled_unit_unwrapped:i16=self.scaled_unit_unwrapped();
+            if self_scaled_unit_unwrapped<0{-(self_scaled_unit_unwrapped as f32)/(i16::MIN as f32)}
+            else{self_scaled_unit_unwrapped as f32/i16::MAX as f32}
+        }
+    }
+
+    pub const fn as_f32(&self)->f32{
+        if self.is_none(){return f32::NAN}
+        self.as_f32_unchecked()
+    }
+
+    pub const fn as_option_f32(&self)->Option<f32>{
+        if self.is_none(){return None}
+        Some(self.as_f32_unchecked())
+    }
+
+    pub const fn from_f64_unit_unchecked(unit:f64)->Self{
+        #[cfg(feature="symmetric-integer-unit-map")]
+        {Self::from_scaled_unwrapped((unit*i16::MAX as f64)as i16)}
+
+        #[cfg(not(feature="symmetric-integer-unit-map"))]
+        {
+            if unit<0.0{Self::from_scaled_unwrapped((-unit*i16::MIN as f64)as i16)}
+            else{Self::from_scaled_unwrapped((unit*i16::MAX as f64)as i16)}
+        }
+    }
+
+    pub const fn from_f64_unit(unit:f64)->Self{
+        if!is_valid_f64(unit)||unit< -1.0||unit>1.0{return Self::none()}
+        Self::from_f64_unit_unchecked(unit)
+    }
+
+    pub const fn from_f64_unit_soft(unit:f64)->Self{
+        if unit.is_nan(){return Self::none()}
+        Self::from_f64_unit_unchecked(unit.clamp(-1.0,1.0))
+    }
+
+    pub const fn as_f64_unchecked(&self)->f64{
+        #[cfg(feature="symmetric-integer-unit-map")]
+        {self.scaled_unit_unwrapped()as f64/i16::MAX as f64}
+
+        #[cfg(not(feature="symmetric-integer-unit-map"))]
+        {
+            let self_scaled_unit_unwrapped:i16=self.scaled_unit_unwrapped();
+            if self_scaled_unit_unwrapped<0{-(self_scaled_unit_unwrapped as f64)/(i16::MIN as f64)}
+            else{self_scaled_unit_unwrapped as f64/i16::MAX as f64}
+        }
+    }
+
+    pub const fn as_f64(&self)->f64{
+        if self.is_none(){return f64::NAN}
+        self.as_f64_unchecked()
+    }
+
+    pub const fn as_option_f64(&self)->Option<f64>{
+        if self.is_none(){return None}
+        Some(self.as_f64_unchecked())
+    }
+}
