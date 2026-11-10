@@ -2,7 +2,7 @@ mod value;
     pub use value::Value;
 
 mod whole;
-    use whole::Whole;
+    pub use whole::Whole;
 
 mod fraction;
-    use fraction::Fraction;
+    pub use fraction::Fraction;
