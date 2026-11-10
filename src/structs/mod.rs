@@ -1,8 +1,8 @@
 mod value;
     pub use value::Value;
 
-mod unit;
-    pub use unit::Unit;
+mod whole;
+    use whole::Whole;
 
-mod angle;
-    pub use angle::Angle;
+mod fraction;
+    use fraction::Fraction;
