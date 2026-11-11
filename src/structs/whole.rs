@@ -1,4 +1,4 @@
-/// Whole number.
+/// Whole number expressed by an *integer* or *unsigned* type.
 #[derive(Clone,Copy)]
 pub struct Whole<T:Copy>{
     whole:T

@@ -16,18 +16,18 @@ impl<W:Copy,F:Copy>UnwrappedValue<W,F>{
         }
     }
 
-    pub(crate)const fn as_whole_part(&self)->Whole<W>{
+    pub(crate)const fn whole_part(&self)->Whole<W>{
         self.whole_part
     }
 
-    pub(crate)const fn as_fraction_part(&self)->Fraction<F>{
+    pub(crate)const fn fraction_part(&self)->Fraction<F>{
         self.fraction_part
     }
 
     pub(crate)const fn as_tuple(&self)->(Whole<W>,Fraction<F>){
         (
-            self.as_whole_part(),
-            self.as_fraction_part()
+            self.whole_part(),
+            self.fraction_part()
         )
     }
 
@@ -48,14 +48,6 @@ pub struct Value<W:Copy,F:Copy>{
 }
 
 impl<W:Copy,F:Copy>Value<W,F>{
-    pub const fn is_none(&self)->bool{
-        self.value.is_none()
-    }
-
-    pub const fn none()->Self{
-        Self{value:None}
-    }
-
     #[allow(unused)]
     pub(crate)const fn from_option(value:Option<UnwrappedValue<W,F>>)->Self{
         Self{value}
@@ -66,43 +58,84 @@ impl<W:Copy,F:Copy>Value<W,F>{
         Self::from_option(Some(unwrapped_value))
     }
 
-    pub const fn from_parts(whole_part:Whole<W>,fraction_part:Fraction<F>)->Self{
-        Self{value:Some(UnwrappedValue::from(whole_part,fraction_part))}
+    #[allow(unused)]
+    pub(crate)const fn value(&self)->Option<UnwrappedValue<W,F>>{
+        self.value
     }
 
-    pub const fn from_tuple(unwrapped_tuple:(Whole<W>,Fraction<F>))->Self{
-        Self::from_parts(
+    #[allow(unused)]
+    pub(crate)const fn value_unwrapped(&self)->UnwrappedValue<W,F>{
+        self.value().unwrap()
+    }
+
+    pub const fn is_none(&self)->bool{
+        self.value().is_none()
+    }
+
+    pub const fn none()->Self{
+        Self::from_option(None)
+    }
+
+    pub const fn from_unwrapped_parts(unwrapped_whole_part:Whole<W>,unwrapped_fraction_part:Fraction<F>)->Self{
+        Self::from_unwrapped(UnwrappedValue::from(
+            unwrapped_whole_part,
+            unwrapped_fraction_part
+        ))
+    }
+
+    pub const fn from_parts(option_whole_part:Option<Whole<W>>,option_fraction_part:Option<Fraction<F>>)->Self{
+        let Some(unwrapped_whole_part)=option_whole_part else{return Self::none()};
+        let Some(unwrapped_fraction_part)=option_fraction_part else{return Self::none()};
+        Self::from_unwrapped_parts(
+            unwrapped_whole_part,
+            unwrapped_fraction_part
+        )
+    }
+
+    pub const fn from_unwrapped_tuple(unwrapped_tuple:(Whole<W>,Fraction<F>))->Self{
+        Self::from_unwrapped_parts(
             unwrapped_tuple.0,
             unwrapped_tuple.1
         )
     }
 
-    pub const fn from_option_tuple(wrapped_tuple:Option<(Whole<W>,Fraction<F>)>)->Self{
-        match wrapped_tuple{
-            Some(unwrapped_tuple)=>Self::from_tuple(unwrapped_tuple),
+    pub const fn from_option_tuple(option_tuple:Option<(Whole<W>,Fraction<F>)>)->Self{
+        match option_tuple{
+            Some(unwrapped_tuple)=>Self::from_unwrapped_tuple(unwrapped_tuple),
             None=>Self::none()
         }
     }
 
-    pub const fn option_whole_part(&self)->Option<Whole<W>>{
-        match self.value{
-            Some(unwrapped_value)=>Some(unwrapped_value.whole_part),
+    pub const fn whole_part(&self)->Option<Whole<W>>{
+        match self.value(){
+            Some(unwrapped_value)=>Some(unwrapped_value.whole_part()),
             None=>None
         }
     }
 
-    pub const fn option_fraction_part(&self)->Option<Fraction<F>>{
-        match self.value{
-            Some(unwrapped_value)=>Some(unwrapped_value.fraction_part),
+    pub const fn fraction_part(&self)->Option<Fraction<F>>{
+        match self.value(){
+            Some(unwrapped_value)=>Some(unwrapped_value.fraction_part()),
             None=>None
         }
     }
 
-    pub const fn unwrap_whole_part(&self)->Whole<W>{
-        self.value.unwrap().whole_part
+    pub const fn whole_part_unwrapped(&self)->Whole<W>{
+        self.value_unwrapped().whole_part()
     }
 
-    pub const fn unwrap_fraction_part(&self)->Whole<W>{
-        self.value.unwrap().whole_part
+    pub const fn fraction_part_unwrapped(&self)->Fraction<F>{
+        self.value_unwrapped().fraction_part()
+    }
+
+    pub const fn as_tuple_option(&self)->Option<(Whole<W>,Fraction<F>)>{
+        match self.value(){
+            Some(unwrapped_value)=>Some(unwrapped_value.as_tuple()),
+            None=>None
+        }
+    }
+
+    pub const fn as_tuple_unwrapped(&self)->(Whole<W>,Fraction<F>){
+        self.value_unwrapped().as_tuple()
     }
 }
