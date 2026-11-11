@@ -1,7 +1,7 @@
 use crate::traits::UnsignedInteger;
 
 /// Number in range `[0;1[` expressed by a value of *unsigned* type.
-#[derive(Clone,Copy)]
+#[derive(Clone,Copy,PartialEq)]
 pub struct Fraction<T:UnsignedInteger=u32>{
     fraction:T
 }

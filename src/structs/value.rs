@@ -3,7 +3,7 @@ use crate::traits::{Integer, UnsignedInteger};
 use super::whole::Whole;
 use super::fraction::Fraction;
 
-#[derive(Clone,Copy)]
+#[derive(Clone,Copy,PartialEq)]
 pub(crate)struct UnwrappedValue<W:Integer=i32,F:UnsignedInteger=u32>{
     whole_part:Whole<W>,
     fraction_part:Fraction<F>
@@ -44,7 +44,7 @@ impl<W:Integer,F:UnsignedInteger>UnwrappedValue<W,F>{
     }
 }
 
-#[derive(Clone,Copy)]
+#[derive(Clone,Copy,PartialEq)]
 pub struct Value<W:Integer=i32,F:UnsignedInteger=u32>{
     value:Option<UnwrappedValue<W,F>>
 }
@@ -63,6 +63,11 @@ impl<W:Integer,F:UnsignedInteger>Value<W,F>{
     #[allow(unused)]
     pub(crate)const fn value(&self)->Option<UnwrappedValue<W,F>>{
         self.value
+    }
+
+    #[allow(unused)]
+    pub(crate)const unsafe fn value_unwrapped_unchecked(&self)->UnwrappedValue<W,F>{
+        unsafe{self.value().unwrap_unchecked()}
     }
 
     #[allow(unused)]
@@ -122,8 +127,16 @@ impl<W:Integer,F:UnsignedInteger>Value<W,F>{
         }
     }
 
+    pub const unsafe fn whole_part_unwrapped_unchecked(&self)->Whole<W>{
+        unsafe{self.value_unwrapped_unchecked()}.whole_part()
+    }
+
     pub const fn whole_part_unwrapped(&self)->Whole<W>{
         self.value_unwrapped().whole_part()
+    }
+
+    pub const unsafe fn fraction_part_unwrapped_unchecked(&self)->Fraction<F>{
+        unsafe{self.value_unwrapped_unchecked()}.fraction_part()
     }
 
     pub const fn fraction_part_unwrapped(&self)->Fraction<F>{
@@ -135,6 +148,10 @@ impl<W:Integer,F:UnsignedInteger>Value<W,F>{
             Some(unwrapped_value)=>Some(unwrapped_value.as_tuple()),
             None=>None
         }
+    }
+
+    pub const unsafe fn as_tuple_unwrapped_unchecked(&self)->(Whole<W>,Fraction<F>){
+        unsafe{self.value_unwrapped_unchecked()}.as_tuple()
     }
 
     pub const fn as_tuple_unwrapped(&self)->(Whole<W>,Fraction<F>){

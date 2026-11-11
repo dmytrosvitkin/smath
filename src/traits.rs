@@ -1,4 +1,4 @@
-pub trait Integer:Copy+'static{
+pub trait Integer:Copy+PartialEq+Eq+'static{
     const ZERO:Self;
     const MIN:Self;
     const MAX:Self;

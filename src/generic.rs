@@ -1,3 +1,5 @@
+use crate::{Fraction, structs::Value, traits::{Integer,UnsignedInteger}};
+
 #[inline(always)]
 const fn pow10(exponent:usize)->u32{
     let mut exponent:usize=exponent;
@@ -73,9 +75,9 @@ pub const fn round(value:f32)->f32{
   else{celling(value-0.5)}
 }
 
-/// Round function that returns 
+/// Round function that that leaves digits after the decimal point.
 /// 
-/// 
+/// Returns the whole part of a rounded number and decimal digits.
 #[inline(always)]
 pub const fn round_digits(value:f32,digits:usize)->f32{
     let pow_10:f32=pow10(digits)as f32;
@@ -211,4 +213,48 @@ pub const fn arithmetic_mean(value:&[f32])->f32{
 #[inline]
 pub const fn arithmetic_average(value:&[f32])->f32{// Alias for arithmetic_mean
     arithmetic_mean(value)
+}
+
+impl<W:Integer,F:UnsignedInteger>Value<W,F>{
+    /// Euclidean floor function.
+    ///
+    /// Returns the greatest whole number equal or less than the given number.
+    pub const fn floor(&mut self)->&mut Self{
+        self.change_fraction_part(Some(Fraction::zero()))
+    }
+}
+
+impl Value<i16,u16>{
+    /// Whole number check.
+    /// 
+    /// Returns `true` if the value is *whole*.
+    pub const fn is_whole(&self)->bool{
+        if let Some(fraction_part)=self.fraction_part(){
+            return fraction_part.as_raw()==0;
+        }
+        false
+    }
+
+    /// Checks if the given number is prime.
+    /// 
+    /// Returns `true` if prime.
+    /// 
+    /// Returns `false` if non-prime.
+    #[inline]
+    pub const fn is_prime(&self)->bool{
+        if!self.is_whole(){return false}
+
+        let raw_whole_part:i16=unsafe{self.whole_part_unwrapped_unchecked()}.as_raw();
+        if raw_whole_part<2||raw_whole_part%2==0||raw_whole_part%3==0{return false}
+        else if raw_whole_part==2||raw_whole_part==3{return true}
+
+        let mut counter:i16=5;
+        
+        while counter*counter<=raw_whole_part{// 6k+-1 rule.
+            if raw_whole_part%counter==0||raw_whole_part%(counter+2)==0{return false}
+            counter+=6;
+        }
+
+        true
+    }
 }
