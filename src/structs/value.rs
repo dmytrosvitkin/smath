@@ -138,4 +138,26 @@ impl<W:Copy,F:Copy>Value<W,F>{
     pub const fn as_tuple_unwrapped(&self)->(Whole<W>,Fraction<F>){
         self.value_unwrapped().as_tuple()
     }
+
+    pub const fn change_unwrapped_whole_part(&mut self,new_unwrapped_whole_part:Whole<W>)->&mut Self{
+        let Some(unwrapped_value)=&mut self.value else{return self};
+        unwrapped_value.change_whole_part(new_unwrapped_whole_part);
+        self
+    }
+
+    pub const fn change_unwrapped_fraction_part(&mut self,new_unwrapped_fraction_part:Fraction<F>)->&mut Self{
+        let Some(unwrapped_value)=&mut self.value else{return self};
+        unwrapped_value.change_fraction_part(new_unwrapped_fraction_part);
+        self
+    }
+
+    pub const fn change_whole_part(&mut self,new_whole_part:Option<Whole<W>>)->&mut Self{
+        let Some(new_unwrapped_whole_part)=new_whole_part else{self.value=None;return self};
+        self.change_unwrapped_whole_part(new_unwrapped_whole_part)
+    }
+
+    pub const fn change_fraction_part(&mut self,new_fraction_part:Option<Fraction<F>>)->&mut Self{
+        let Some(new_unwrapped_fraction_part)=new_fraction_part else{self.value=None;return self};
+        self.change_unwrapped_fraction_part(new_unwrapped_fraction_part)
+    }
 }
