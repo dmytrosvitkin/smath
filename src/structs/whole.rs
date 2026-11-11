@@ -2,7 +2,7 @@ use crate::traits::Integer;
 
 /// Whole number expressed by an *integer* or *unsigned* type.
 #[derive(Clone,Copy)]
-pub struct Whole<T:Integer>{
+pub struct Whole<T:Integer=i32>{
     whole:T
 }
 

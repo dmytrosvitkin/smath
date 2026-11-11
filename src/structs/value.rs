@@ -4,7 +4,7 @@ use super::whole::Whole;
 use super::fraction::Fraction;
 
 #[derive(Clone,Copy)]
-pub(crate)struct UnwrappedValue<W:Integer,F:UnsignedInteger>{
+pub(crate)struct UnwrappedValue<W:Integer=i32,F:UnsignedInteger=u32>{
     whole_part:Whole<W>,
     fraction_part:Fraction<F>
 }
@@ -45,7 +45,7 @@ impl<W:Integer,F:UnsignedInteger>UnwrappedValue<W,F>{
 }
 
 #[derive(Clone,Copy)]
-pub struct Value<W:Integer,F:UnsignedInteger>{
+pub struct Value<W:Integer=i32,F:UnsignedInteger=u32>{
     value:Option<UnwrappedValue<W,F>>
 }
 
