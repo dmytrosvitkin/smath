@@ -27,7 +27,7 @@ impl_value_macro_for!(u128, u128);
 */
 
 impl Value<i16,u16>{
-    pub const fn parse(input_value_str:&str)->Self{
+    pub const fn from_str(input_value_str:&str)->Self{
         let input_value_bytes:&[u8]=input_value_str.as_bytes();
         let input_value_bytes_len:u8=input_value_bytes.len()as u8;// `u8` is already bigger than the biggest digit's length.
 
@@ -52,15 +52,30 @@ impl Value<i16,u16>{
                 break
             }
 
-            let digit:u8=match_byte_digit(input_value_byte);
-            if digit>9{}
+            let digit:i8=match_byte_digit(input_value_byte);
+            if digit>9||digit<0{return Self::none()}
+            //if is_negative{digit*=-1}
+
+            if is_negative{
+                if whole_part<i16::MIN/10||(whole_part==i16::MIN/10&&digit>-(i16::MIN%10)as i8){return Self::none()}// Underflow protection.
+                whole_part*=10;whole_part-=digit as i16
+            }
+            else{
+                if(i16::MAX-whole_part)/10<digit as i16{return Self::none()}// Overflow protection.
+                whole_part*=10;whole_part+=digit as i16
+            }
+
+            index_counter+=1
         }
 
-        Self::none()
+        Self::from_unwrapped_parts(
+            Whole::from_raw(whole_part),
+        Fraction::zero()
+        )
     }
 }
 
-const fn match_byte_digit(byte:u8)->u8{// `u8::MAX` or anything outside of 0-9 is considered an illegal symbol.
+const fn match_byte_digit(byte:u8)->i8{// `u8::MAX` or anything outside of 0-9 is considered an illegal symbol.
     match byte{
         b'0'=>0,
         b'1'=>1,
@@ -72,6 +87,6 @@ const fn match_byte_digit(byte:u8)->u8{// `u8::MAX` or anything outside of 0-9 i
         b'7'=>7,
         b'8'=>8,
         b'9'=>9,
-        _=>u8::MAX,
+        _=>i8::MAX,
     }
 }
