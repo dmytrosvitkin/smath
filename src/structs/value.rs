@@ -1,14 +1,16 @@
+use crate::traits::{Integer, UnsignedInteger};
+
 use super::whole::Whole;
 use super::fraction::Fraction;
 
 #[derive(Clone,Copy)]
-pub(crate)struct UnwrappedValue<W:Copy,F:Copy>{
+pub(crate)struct UnwrappedValue<W:Integer,F:UnsignedInteger>{
     whole_part:Whole<W>,
     fraction_part:Fraction<F>
 }
 
 #[allow(unused)]
-impl<W:Copy,F:Copy>UnwrappedValue<W,F>{
+impl<W:Integer,F:UnsignedInteger>UnwrappedValue<W,F>{
     pub(crate)const fn from(whole_part:Whole<W>,fraction_part:Fraction<F>)->Self{
         Self{
             whole_part,
@@ -43,11 +45,11 @@ impl<W:Copy,F:Copy>UnwrappedValue<W,F>{
 }
 
 #[derive(Clone,Copy)]
-pub struct Value<W:Copy,F:Copy>{
+pub struct Value<W:Integer,F:UnsignedInteger>{
     value:Option<UnwrappedValue<W,F>>
 }
 
-impl<W:Copy,F:Copy>Value<W,F>{
+impl<W:Integer,F:UnsignedInteger>Value<W,F>{
     #[allow(unused)]
     pub(crate)const fn from_option(value:Option<UnwrappedValue<W,F>>)->Self{
         Self{value}
@@ -159,5 +161,37 @@ impl<W:Copy,F:Copy>Value<W,F>{
     pub const fn change_fraction_part(&mut self,new_fraction_part:Option<Fraction<F>>)->&mut Self{
         let Some(new_unwrapped_fraction_part)=new_fraction_part else{self.value=None;return self};
         self.change_unwrapped_fraction_part(new_unwrapped_fraction_part)
+    }
+
+    pub const fn zero()->Self{
+        Self::from_unwrapped_parts(Whole::zero(),Fraction::zero())
+    }
+    
+    pub const fn min()->Self{
+        Self::from_unwrapped_parts(Whole::min(),Fraction::min())
+    }
+    
+    pub const fn max()->Self{
+        Self::from_unwrapped_parts(Whole::max(),Fraction::max())
+    }
+}
+
+impl<W:Integer,F:UnsignedInteger>Value<W,F>{
+    pub const fn from_whole_number(whole_number:W)->Self{
+        Self::from_unwrapped_parts(
+            Whole::from_raw(whole_number),
+            Fraction::zero()
+        )
+    }
+
+    pub const fn as_whole_number_option(&self)->Option<W>{
+        match self.whole_part(){
+            Some(unwrapped_whole_part)=>Some(unwrapped_whole_part.as_raw()),
+            None=>None
+        }
+    }
+
+    pub const fn as_whole_number_unwrapped(&self)->W{
+        self.whole_part_unwrapped().as_raw()
     }
 }

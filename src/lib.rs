@@ -19,3 +19,5 @@ pub mod matrix;
     pub use matrix::*;
 
 mod utils;
+
+mod traits;
