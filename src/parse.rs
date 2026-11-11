@@ -68,6 +68,8 @@ impl Value<i16,u16>{
             index_counter+=1
         }
 
+        while index_counter<input_value_bytes_len{panic!("!!!")}
+
         Self::from_unwrapped_parts(
             Whole::from_raw(whole_part),
         Fraction::zero()
