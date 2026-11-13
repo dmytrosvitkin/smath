@@ -1,31 +1,6 @@
 use crate::traits::*;
 use crate::{Value, Whole, Fraction};
 
-/*
-#[macro_export]
-macro_rules!value{
-    ($w:ty,$f:ty,$value:expr)=>{Value::<$w,$f>::parse(stringify!($value))};// If types are explicit.
-    ($value:expr)=>{Value::<i32,u32>::parse(stringify!($value))}// Defaults to i32 and u32 types otherwise.
-}
-
-#[macro_export]
-macro_rules!impl_value_macro_for{
-    ($w:ty,$f:ty)=>{
-        impl Value<$w,$f>{
-            pub const fn parse(input_value_str:&str)->Self{
-                Self::none();
-            }
-        }
-    };
-}
-
-// Generate parse implementations for supported type pairs
-impl_value_macro_for!(i32, u32);
-impl_value_macro_for!(i64, u32);
-impl_value_macro_for!(u32, u32);
-impl_value_macro_for!(u128, u128);
-*/
-
 impl Value<i16,u16>{
     pub const fn from_str(input_value_str:&str)->Self{
         let input_value_bytes:&[u8]=input_value_str.as_bytes();
@@ -95,7 +70,7 @@ impl Value<i16,u16>{
                 if digit>9{return Self::none()}
 
                 fraction_part=(fraction_base/10)*(digit);
-                primary_quotient=((fraction_base%10+1)*digit)as u8;
+                primary_quotient=((fraction_base%10+1+2)*digit)as u8;// 2 is an initial stretch coefficient, equal to 0.0045% of the u16:MAX, covering the error caused by x.9999 being equal to u16:MAX-2.
 
                 fraction_base/=10;
                 index_counter+=1
@@ -110,7 +85,9 @@ impl Value<i16,u16>{
                 fraction_part+=(fraction_base/10)*(digit)+primary_quotient as u16;
                 primary_quotient=((fraction_base%10)*digit)as u8+secondary_quotient;
                 
+                if fraction_base==0{break}
                 fraction_base/=10;
+
                 index_counter+=1
             }
             fraction_part+=(primary_quotient/10)as u16
