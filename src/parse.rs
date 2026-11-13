@@ -1,5 +1,5 @@
-use crate::{traits::*,utils::*};
-use crate::{Value, Whole, Fraction};
+use crate::{traits::*,utils::match_byte_digit};
+use crate::{Value,Whole,Fraction};
 
 impl Value<i16,u16>{
     pub const fn from_str(input_value_str:&str)->Self{
@@ -17,9 +17,13 @@ impl Value<i16,u16>{
             index_counter+=1
         }
 
+        let whole_type_min:i16=i16::MIN;
+        let whole_type_max:i16=i16::MAX;
+        let fraction_type_max:u16=u16::MAX;
+
         let mut whole_part:i16=0;
         let mut fraction_part:u16=0;
-        let mut fraction_base:u16=u16::MAX;
+        let mut fraction_base:u16=fraction_type_max;
 
         let mut primary_quotient:u8=0;
         let mut secondary_quotient:u8=0;
@@ -36,17 +40,13 @@ impl Value<i16,u16>{
                 let digit:i8=match_byte_digit(input_value_byte);
                 if digit>9||digit<0{return Self::none()}
 
-                if whole_part<i16::MIN/10||(whole_part==i16::MIN/10&&digit>-(i16::MIN%10)as i8){return Self::none()}// Underflow protection.
+                if whole_part<i16::MIN/10||(whole_part==whole_type_min/10&&digit>-(whole_type_min%10)as i8){return Self::none()}// Underflow protection.
                 whole_part*=10;whole_part-=digit as i16;
 
                 index_counter+=1
             }
-
-            while index_counter<input_value_bytes_len{
-                index_counter+=1;
-                panic!("[!] NEGATIVE INTEGERS NOT FINISHED")
-            }
         }
+
         else{
             while index_counter<input_value_bytes_len{
                 let input_value_byte:u8=input_value_bytes[index_counter as usize];
@@ -59,38 +59,49 @@ impl Value<i16,u16>{
                 let digit:i8=match_byte_digit(input_value_byte);
                 if digit>9||digit<0{return Self::none()}
 
-                if whole_part>i16::MAX/10||(whole_part==i16::MAX/10&&digit<(i16::MAX%10)as i8){return Self::none()}// Overflow protection.
+                if whole_part>whole_type_max/10||(whole_part==whole_type_max/10&&digit<(whole_type_max%10)as i8){return Self::none()}// Overflow protection.
                 whole_part*=10;whole_part+=digit as i16;
 
                 index_counter+=1
             }
+        }
 
-            if index_counter<input_value_bytes_len{
-                let digit:u16=match_byte_digit(input_value_bytes[index_counter as usize])as u16;
-                if digit>9{return Self::none()}
+        if index_counter<input_value_bytes_len{
+            let digit:u16=match_byte_digit(input_value_bytes[index_counter as usize])as u16;
+            if digit>9{return Self::none()}
 
-                fraction_part=(fraction_base/10)*(digit);
-                primary_quotient=((fraction_base%10+1+2)*digit)as u8;// 2 is an initial stretch coefficient, equal to 0.0045% of the u16:MAX, covering the error caused by x.9999 being equal to u16:MAX-2.
+            fraction_part=(fraction_base/10)*(digit);
+            primary_quotient=((fraction_base%10+1+2)*digit)as u8;// 2 is an initial stretch coefficient, equal to 0.0045% of the u16:MAX, covering the error caused by x.9999 being equal to u16:MAX-2.
 
-                fraction_base/=10;
-                index_counter+=1
+            fraction_base/=10;
+            index_counter+=1
+        }
+        while index_counter<input_value_bytes_len{
+            let digit:u16=match_byte_digit(input_value_bytes[index_counter as usize])as u16;
+            if digit>9{return Self::none()}
+
+            secondary_quotient=primary_quotient%10;
+            primary_quotient/=10;
+
+            fraction_part+=(fraction_base/10)*(digit)+primary_quotient as u16;
+            primary_quotient=((fraction_base%10)*digit)as u8+secondary_quotient;
+            
+            if fraction_base==0{break}
+            fraction_base/=10;
+
+            index_counter+=1
+        }
+        fraction_part+=(primary_quotient/10)as u16;
+
+        if whole_part<0{
+            if fraction_part!=0{
+                if whole_part==whole_type_min{return Self::none()}
+                whole_part-=1
             }
-            while index_counter<input_value_bytes_len{
-                let digit:u16=match_byte_digit(input_value_bytes[index_counter as usize])as u16;
-                if digit>9{return Self::none()}
 
-                secondary_quotient=primary_quotient%10;
-                primary_quotient/=10;
-
-                fraction_part+=(fraction_base/10)*(digit)+primary_quotient as u16;
-                primary_quotient=((fraction_base%10)*digit)as u8+secondary_quotient;
-                
-                if fraction_base==0{break}
-                fraction_base/=10;
-
-                index_counter+=1
-            }
-            fraction_part+=(primary_quotient/10)as u16
+            fraction_part=fraction_type_max-fraction_part;
+            if fraction_part==fraction_type_max{fraction_part=0}
+            else{fraction_part+=1}
         }
 
         Self::from_unwrapped_parts(
