@@ -95,10 +95,10 @@ impl Value<i16,u16>{
                 if digit>9{return Self::none()}
 
                 fraction_part=(fraction_base/10)*(digit);
-                if digit==0{primary_quotient=0}
-                else{primary_quotient+=((fraction_base%digit+1)*digit)as u8}
+                primary_quotient=((fraction_base%10+1)*digit)as u8;
 
-                fraction_base/=10
+                fraction_base/=10;
+                index_counter+=1
             }
             while index_counter<input_value_bytes_len{
                 let digit:u16=match_byte_digit(input_value_bytes[index_counter as usize])as u16;
@@ -108,14 +108,12 @@ impl Value<i16,u16>{
                 primary_quotient/=10;
 
                 fraction_part+=(fraction_base/10)*(digit)+primary_quotient as u16;
-                if digit==0{primary_quotient=0}
-                else{primary_quotient+=((fraction_base%digit+1)*digit)as u8};
-                primary_quotient+=secondary_quotient;
+                primary_quotient=((fraction_base%10)*digit)as u8+secondary_quotient;
                 
-                if fraction_base==0{break}
                 fraction_base/=10;
                 index_counter+=1
             }
+            fraction_part+=(primary_quotient/10)as u16
         }
 
         Self::from_unwrapped_parts(
