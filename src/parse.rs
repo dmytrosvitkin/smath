@@ -6,13 +6,13 @@ impl Value<i16,u16>{
         let input_value_bytes:&[u8]=input_value_str.as_bytes();
         let input_value_bytes_len:u8=input_value_bytes.len()as u8;// `u8` is already bigger than the biggest digit's length.
 
-        if input_value_bytes_len==0||!input_value_bytes.is_ascii(){return Self::none()}
+        if input_value_bytes_len==0{panic!("The value cannot be empty.")}//compile_error!("The value cannot be empty.")}
 
         let mut index_counter:u8=0;
         let mut is_negative:bool=false;
 
         if input_value_bytes[0]==b'-'{
-            if input_value_bytes_len==1{return Self::none()}
+            if input_value_bytes_len==1{panic!("The value cannot consist of only `-`")}
             is_negative=true;
             index_counter+=1
         }
@@ -26,7 +26,7 @@ impl Value<i16,u16>{
         let mut fraction_base:u16=fraction_type_max;
 
         let mut primary_quotient:u8=0;
-        let mut secondary_quotient:u8=0;
+        let mut secondary_quotient:u8;
 
         if is_negative{
             while index_counter<input_value_bytes_len{
@@ -37,10 +37,9 @@ impl Value<i16,u16>{
                     break
                 }
 
-                let digit:i8=match_byte_digit(input_value_byte);
-                if digit>9||digit<0{return Self::none()}
+                let digit:u8=match_byte_digit(input_value_byte);
 
-                if whole_part<i16::MIN/10||(whole_part==whole_type_min/10&&digit>-(whole_type_min%10)as i8){return Self::none()}// Underflow protection.
+                if whole_part<i16::MIN/10||(whole_part==whole_type_min/10&&digit>-(whole_type_min%10)as u8){panic!("Integer Underflow.")}
                 whole_part*=10;whole_part-=digit as i16;
 
                 index_counter+=1
@@ -56,10 +55,9 @@ impl Value<i16,u16>{
                     break
                 }
 
-                let digit:i8=match_byte_digit(input_value_byte);
-                if digit>9||digit<0{return Self::none()}
+                let digit:u8=match_byte_digit(input_value_byte);
 
-                if whole_part>whole_type_max/10||(whole_part==whole_type_max/10&&digit<(whole_type_max%10)as i8){return Self::none()}// Overflow protection.
+                if whole_part>whole_type_max/10||(whole_part==whole_type_max/10&&digit<(whole_type_max%10)as u8){panic!("Integer Overflow.")}// Overflow protection.
                 whole_part*=10;whole_part+=digit as i16;
 
                 index_counter+=1
@@ -68,7 +66,6 @@ impl Value<i16,u16>{
 
         if index_counter<input_value_bytes_len{
             let digit:u16=match_byte_digit(input_value_bytes[index_counter as usize])as u16;
-            if digit>9{return Self::none()}
 
             fraction_part=(fraction_base/10)*(digit);
             primary_quotient=((fraction_base%10+1+2)*digit)as u8;// 2 is an initial stretch coefficient, equal to 0.0045% of the u16:MAX, covering the error caused by x.9999 being equal to u16:MAX-2.
@@ -78,7 +75,6 @@ impl Value<i16,u16>{
         }
         while index_counter<input_value_bytes_len{
             let digit:u16=match_byte_digit(input_value_bytes[index_counter as usize])as u16;
-            if digit>9{return Self::none()}
 
             secondary_quotient=primary_quotient%10;
             primary_quotient/=10;
@@ -95,7 +91,7 @@ impl Value<i16,u16>{
 
         if whole_part<0{
             if fraction_part!=0{
-                if whole_part==whole_type_min{return Self::none()}
+                if whole_part==whole_type_min{panic!("Integer Underflow")}
                 whole_part-=1
             }
 
@@ -104,9 +100,9 @@ impl Value<i16,u16>{
             else{fraction_part+=1}
         }
 
-        Self::from_unwrapped_parts(
-            Whole::from_raw(whole_part),
-        Fraction::from_raw(fraction_part)
+        Self::from_raw_parts(
+            whole_part,
+            fraction_part
         )
     }
 }

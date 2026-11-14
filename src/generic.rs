@@ -220,7 +220,7 @@ impl<W:Integer,F:UnsignedInteger>Value<W,F>{
     ///
     /// Returns the greatest whole number equal or less than the given number.
     pub const fn floor(&mut self)->&mut Self{
-        self.change_fraction_part(Some(Fraction::zero()))
+        self.change_fraction_part(Fraction::zero())
     }
 }
 
@@ -229,10 +229,7 @@ impl Value<i16,u16>{
     /// 
     /// Returns `true` if the value is *whole*.
     pub const fn is_whole(&self)->bool{
-        if let Some(fraction_part)=self.fraction_part(){
-            return fraction_part.as_raw()==0;
-        }
-        false
+        self.raw_fraction_part()==0
     }
 
     /// Checks if the given number is prime.
@@ -244,7 +241,7 @@ impl Value<i16,u16>{
     pub const fn is_prime(&self)->bool{
         if!self.is_whole(){return false}
 
-        let raw_whole_part:i16=unsafe{self.whole_part_unwrapped_unchecked()}.as_raw();
+        let raw_whole_part:i16=self.raw_whole_part();
         if raw_whole_part<2||raw_whole_part%2==0||raw_whole_part%3==0{return false}
         else if raw_whole_part==2||raw_whole_part==3{return true}
 
