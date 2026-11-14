@@ -26,7 +26,7 @@ impl Value<i16,u16>{
         let mut fraction_base:u16=fraction_type_max;
 
         let mut primary_quotient:u8=0;
-        let mut secondary_quotient:u8;
+        //let mut secondary_quotient:u8;
 
         if is_negative{
             while index_counter<input_value_bytes_len{
@@ -76,7 +76,7 @@ impl Value<i16,u16>{
         while index_counter<input_value_bytes_len{
             let digit:u16=match_byte_digit(input_value_bytes[index_counter as usize])as u16;
 
-            secondary_quotient=primary_quotient%10;
+            let secondary_quotient:u8=primary_quotient%10;
             primary_quotient/=10;
 
             fraction_part+=(fraction_base/10)*(digit)+primary_quotient as u16;
