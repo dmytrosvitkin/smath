@@ -4,6 +4,7 @@ pub trait Integer:Copy+PartialEq+Eq+'static{
     const MAX:Self;
 }
 
+#[allow(unused)]
 pub trait SignedInteger:Integer{}
 
 pub trait UnsignedInteger:Integer{}
