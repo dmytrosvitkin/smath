@@ -12,3 +12,4 @@ repository = "https://github.com/Dmytro-Svitkin/smath"
 [features]
 default = ["scaled_fraction"]
 scaled_fraction = []
+legacy_build = []
