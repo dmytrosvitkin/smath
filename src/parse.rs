@@ -178,7 +178,7 @@ macro_rules!from_str_types{
                     let digit:$fraction_type=match_byte_digit(input_value_bytes[index_counter as usize])as $fraction_type;
 
                     fraction_part=(fraction_base/10)*(digit);
-                    primary_quotient=((fraction_base%10+1+2)*digit)as u8;// 2 is an initial stretch coefficient, equal to 0.0045% of the u16:MAX, covering the error caused by x.9999 being equal to u16:MAX-2.
+                    primary_quotient=((fraction_base%10+1)*digit)as u8;//REMOVED// 2 is an initial stretch coefficient, equal to 0.0045% of the u16:MAX, covering the error caused by x.9999 being equal to u16:MAX-2.
 
                     fraction_base/=10;
                     index_counter+=1
@@ -249,4 +249,12 @@ macro_rules!make_from_str_types{
 make_from_str_types!{
     whole_types:[u8,i8,u16,i16,u32,i32,u64,i64,u128,i128,usize,isize],
     fraction_types:[u8,u16,u32,u64,u128,usize]
+}
+
+#[macro_export]
+macro_rules!value{
+    ($input_value_str:expr,$whole_type:ty,$fraction_type:ty)=>{{
+        const RES:crate::Value<$whole_type,$fraction_type>=crate::Value::<$whole_type,$fraction_type>::from_str(stringify!($input_value_str));
+        RES
+    }};
 }
