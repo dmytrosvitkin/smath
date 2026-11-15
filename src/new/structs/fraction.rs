@@ -1,4 +1,4 @@
-use crate::traits::UnsignedInteger;
+use crate::new::traits::UnsignedInteger;
 
 /// Number in range `[0;1[` expressed by a value of *unsigned* type.
 #[derive(Clone,Copy,PartialEq)]

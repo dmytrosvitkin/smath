@@ -1,4 +1,4 @@
-use crate::traits::{Integer, UnsignedInteger};
+use crate::new::traits::{Integer, UnsignedInteger};
 
 use super::whole::Whole;
 use super::fraction::Fraction;

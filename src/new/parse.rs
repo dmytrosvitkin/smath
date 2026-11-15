@@ -1,5 +1,5 @@
-use crate::utils::match_byte_digit;
-use crate::Value;
+use crate::new::utils::match_byte_digit;
+use crate::new::Value;
 
 macro_rules!from_str_types{
     ($whole_type:ty,$fraction_type:ty)=>{
@@ -161,7 +161,7 @@ make_from_str_types!{
 }
 
 #[macro_export]
-macro_rules! value {
+macro_rules!value{
     ($input_value_str:expr,$whole_type:ty,$fraction_type:ty)=>{{
         const RES:crate::Value<$whole_type,$fraction_type>=crate::Value::<$whole_type,$fraction_type>::from_str(stringify!($input_value_str));
         RES

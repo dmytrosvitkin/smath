@@ -1,4 +1,4 @@
-use crate::traits::Integer;
+use crate::new::traits::Integer;
 
 /// Whole number expressed by an *integer* or *unsigned* type.
 #[derive(Clone,Copy,PartialEq)]
