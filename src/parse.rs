@@ -1,114 +1,6 @@
 use crate::utils::match_byte_digit;
 use crate::Value;
 
-/*
-impl Value<i16,u16>{
-    pub const fn from_str(input_value_str:&str)->Self{
-        let input_value_bytes:&[u8]=input_value_str.as_bytes();
-        let input_value_bytes_len:u8=input_value_bytes.len()as u8;// `u8` is already bigger than the biggest digit's length.
-
-        if input_value_bytes_len==0{panic!("The value cannot be empty.")}//compile_error!("The value cannot be empty.")}
-
-        let mut index_counter:u8=0;
-        let mut is_negative:bool=false;
-
-        if input_value_bytes[0]==b'-'{
-            if input_value_bytes_len==1{panic!("The value cannot consist of only `-`")}
-            is_negative=true;
-            index_counter+=1
-        }
-
-        let whole_type_min:i16=i16::MIN;
-        let whole_type_max:i16=i16::MAX;
-        let fraction_type_max:u16=u16::MAX;
-
-        let mut whole_part:i16=0;
-        let mut fraction_part:u16=0;
-        let mut fraction_base:u16=fraction_type_max;
-
-        let mut primary_quotient:u8=0;
-        //let mut secondary_quotient:u8;
-
-        if is_negative{
-            while index_counter<input_value_bytes_len{
-                let input_value_byte:u8=input_value_bytes[index_counter as usize];
-
-                if input_value_byte==b'.'{
-                    index_counter+=1;
-                    break
-                }
-
-                let digit:u8=match_byte_digit(input_value_byte);
-
-                if whole_part<i16::MIN/10||(whole_part==whole_type_min/10&&digit>-(whole_type_min%10)as u8){panic!("Integer Underflow.")}
-                whole_part*=10;whole_part-=digit as i16;
-
-                index_counter+=1
-            }
-        }
-
-        else{
-            while index_counter<input_value_bytes_len{
-                let input_value_byte:u8=input_value_bytes[index_counter as usize];
-
-                if input_value_byte==b'.'{
-                    index_counter+=1;
-                    break
-                }
-
-                let digit:u8=match_byte_digit(input_value_byte);
-
-                if whole_part>whole_type_max/10||(whole_part==whole_type_max/10&&digit<(whole_type_max%10)as u8){panic!("Integer Overflow.")}// Overflow protection.
-                whole_part*=10;whole_part+=digit as i16;
-
-                index_counter+=1
-            }
-        }
-
-        if index_counter<input_value_bytes_len{
-            let digit:u16=match_byte_digit(input_value_bytes[index_counter as usize])as u16;
-
-            fraction_part=(fraction_base/10)*(digit);
-            primary_quotient=((fraction_base%10+1+2)*digit)as u8;// 2 is an initial stretch coefficient, equal to 0.0045% of the u16:MAX, covering the error caused by x.9999 being equal to u16:MAX-2.
-
-            fraction_base/=10;
-            index_counter+=1
-        }
-        while index_counter<input_value_bytes_len{
-            let digit:u16=match_byte_digit(input_value_bytes[index_counter as usize])as u16;
-
-            let secondary_quotient:u8=primary_quotient%10;
-            primary_quotient/=10;
-
-            fraction_part+=(fraction_base/10)*(digit)+primary_quotient as u16;
-            primary_quotient=((fraction_base%10)*digit)as u8+secondary_quotient;
-            
-            if fraction_base==0{break}
-            fraction_base/=10;
-
-            index_counter+=1
-        }
-        fraction_part+=(primary_quotient/10)as u16;
-
-        if whole_part<0{
-            if fraction_part!=0{
-                if whole_part==whole_type_min{panic!("Integer Underflow")}
-                whole_part-=1
-            }
-
-            fraction_part=fraction_type_max-fraction_part;
-            if fraction_part==fraction_type_max{fraction_part=0}
-            else{fraction_part+=1}
-        }
-
-        Self::from_raw_parts(
-            whole_part,
-            fraction_part
-        )
-    }
-}
-*/
-
 macro_rules!from_str_types{
     ($whole_type:ty,$fraction_type:ty)=>{
         impl Value<$whole_type,$fraction_type>{
@@ -136,7 +28,6 @@ macro_rules!from_str_types{
                 let mut fraction_base:$fraction_type=fraction_type_max;
 
                 let mut primary_quotient:u8=0;
-                //let mut secondary_quotient:u8;
 
                 if is_negative{
                     while index_counter<input_value_bytes_len{
@@ -147,7 +38,7 @@ macro_rules!from_str_types{
                             break
                         }
 
-                        let digit:i8=match_byte_digit(input_value_byte) as i8;
+                        let digit:i8=match_byte_digit(input_value_byte)as i8;
 
                         if whole_part<whole_type_min/10||(whole_part==whole_type_min/10&&digit>-(whole_type_min as i8%10)){panic!("Integer Underflow.")}
                         whole_part*=10;whole_part-=digit as $whole_type;
@@ -177,8 +68,27 @@ macro_rules!from_str_types{
                 if index_counter<input_value_bytes_len{
                     let digit:$fraction_type=match_byte_digit(input_value_bytes[index_counter as usize])as $fraction_type;
 
-                    fraction_part=(fraction_base/10)*(digit);
-                    primary_quotient=((fraction_base%10+1)*digit)as u8;//REMOVED// 2 is an initial stretch coefficient, equal to 0.0045% of the u16:MAX, covering the error caused by x.9999 being equal to u16:MAX-2.
+                    #[cfg(not(feature="scaled_fraction"))]
+                    {
+                        fraction_part=(fraction_base/10)*(digit);
+                        primary_quotient=((fraction_base%10+1)*digit)as u8
+                    }
+
+                    #[cfg(feature="scaled_fraction")]
+                    {
+                        let stretch:$fraction_type=match<$fraction_type>::BITS{
+                            8=>2,
+                            16=>3,
+                            32=>7,
+                            64=>10,
+                            128=>19,
+                            _=>1
+                        };
+
+                        let remainder_sum=fraction_base%10+stretch;
+                        fraction_part=(fraction_base/10+(remainder_sum/10))*(digit);
+                        primary_quotient=(((remainder_sum%10)as u8)*digit as u8)
+                    }
 
                     fraction_base/=10;
                     index_counter+=1
@@ -197,7 +107,7 @@ macro_rules!from_str_types{
 
                     index_counter+=1
                 }
-                fraction_part+=(primary_quotient/10)as $fraction_type;
+                fraction_part+=(primary_quotient/10)as $fraction_type;// 10 replaced by 9 for a while.
 
                 #[allow(unused_comparisons)]// Useful for negative signed integers.
                 if whole_part<0{
@@ -233,7 +143,6 @@ macro_rules!type_cross_product{
     };
 }
 
-#[macro_export]
 macro_rules!make_from_str_types{
     (
         whole_types:[$($whole_type:ty),*$(,)?],
@@ -252,9 +161,19 @@ make_from_str_types!{
 }
 
 #[macro_export]
-macro_rules!value{
+macro_rules! value {
     ($input_value_str:expr,$whole_type:ty,$fraction_type:ty)=>{{
         const RES:crate::Value<$whole_type,$fraction_type>=crate::Value::<$whole_type,$fraction_type>::from_str(stringify!($input_value_str));
         RES
     }};
+
+    ($input_value_str:expr,$whole_type:ty)=>{{
+        const RES:crate::Value<$whole_type,u32>=crate::Value::<$whole_type,u32>::from_str(stringify!($input_value_str));
+        RES
+    }};
+
+    ($input_value_str:expr)=>{{
+        const RES:crate::Value<i32,u32>=crate::Value::<i32,u32>::from_str(stringify!($input_value_str));
+        RES
+    }}
 }

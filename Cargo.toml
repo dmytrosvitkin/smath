@@ -6,4 +6,9 @@ publish = false
 description = "Lightweight, optimized mathematical utilities with zero dependencies."
 license = "BSD-3-Clause"
 repository = "https://github.com/Dmytro-Svitkin/smath"
+
 [dependencies]
+
+[features]
+default = ["scaled_fraction"]
+scaled_fraction = []
