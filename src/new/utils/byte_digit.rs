@@ -1,4 +1,4 @@
-pub(crate)const fn match_byte_digit(byte:u8)->u8{// `u8::MAX` or anything outside of 0-9 is considered an illegal symbol.
+pub(crate)const fn match_byte_digit(byte:u8)->u8{
     match byte{
         b'0'=>0,
         b'1'=>1,
@@ -10,6 +10,22 @@ pub(crate)const fn match_byte_digit(byte:u8)->u8{// `u8::MAX` or anything outsid
         b'7'=>7,
         b'8'=>8,
         b'9'=>9,
-        _=>panic!("Illegal digit.")
+        _=>panic!("Illegal byte!")
+    }
+}
+
+pub(crate)const fn match_digit_byte(digit:u8)->u8{
+    match digit{
+        0=>b'0',
+        1=>b'1',
+        2=>b'2',
+        3=>b'3',
+        4=>b'4',
+        5=>b'5',
+        6=>b'6',
+        7=>b'7',
+        8=>b'8',
+        9=>b'9',
+        _=>panic!("Illegal digit!")
     }
 }

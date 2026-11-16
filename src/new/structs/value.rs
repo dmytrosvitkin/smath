@@ -1,15 +1,16 @@
+use core::fmt;
 use crate::new::traits::{Integer, UnsignedInteger};
 
 use super::whole::Whole;
 use super::fraction::Fraction;
 
-#[derive(Clone,Copy,PartialEq)]
-pub struct Value<W:Integer=i32,F:UnsignedInteger=u32>{
+#[derive(Clone,Copy,PartialEq,Debug)]
+pub struct Value<W:fmt::Display+Integer=i32,F:fmt::Display+UnsignedInteger=u32>{
     whole_part:Whole<W>,
     fraction_part:Fraction<F>
 }
 
-impl<W:Integer,F:UnsignedInteger>Value<W,F>{
+impl<W:Integer+fmt::Display,F:UnsignedInteger+fmt::Display>Value<W,F>{
     pub const fn from_parts(whole_part:Whole<W>,fraction_part:Fraction<F>)->Self{
         Self{
             whole_part,
@@ -64,5 +65,15 @@ impl<W:Integer,F:UnsignedInteger>Value<W,F>{
 
     pub const fn change_raw_fraction_part(&mut self,new_raw_fraction_part:F)->&mut Self{
         self.change_fraction_part(Fraction::from_raw(new_raw_fraction_part))
+    }
+}
+
+const fn fraction_str(fraction_str:&str)->u16{
+0
+}
+
+impl<W:Integer+fmt::Display,F:UnsignedInteger+fmt::Display>fmt::Display for Value<W,F>{
+    fn fmt(&self,f:&mut fmt::Formatter<'_>)->fmt::Result{
+        write!(f,"{}.{}",self.raw_whole_part(),self.raw_fraction_part())
     }
 }
