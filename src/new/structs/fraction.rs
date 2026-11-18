@@ -28,3 +28,10 @@ impl<T:UnsignedInteger+fmt::Display>Fraction<T>{
         Self::from_raw(T::MAX)
     }
 }
+
+impl Fraction<u16>{
+    pub(crate)const fn to_bytes(&self)->[u8;40]{
+        let result:[u8;40]=[0;40];
+        result
+    }
+}

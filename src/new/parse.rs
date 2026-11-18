@@ -1,3 +1,5 @@
+use core::fmt;
+use crate::{Fraction, Integer, UnsignedInteger, Whole};
 use crate::new::utils::match_byte_digit;
 use crate::new::Value;
 
