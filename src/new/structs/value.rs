@@ -105,10 +105,6 @@ impl<W:Integer+fmt::Display,F:UnsignedInteger+fmt::Display>Value<W,F>{
     }
 }
 
-const fn fraction_str(fraction_str:&str)->u16{
-0
-}
-
 impl<W:Integer+fmt::Display,F:UnsignedInteger+fmt::Display>fmt::Display for Value<W,F>{
     fn fmt(&self,f:&mut fmt::Formatter<'_>)->fmt::Result{
         write!(f,"{}.{}",self.raw_whole_part(),self.raw_fraction_part())
