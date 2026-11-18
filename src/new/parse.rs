@@ -3,8 +3,20 @@ use crate::{Fraction, Integer, UnsignedInteger, Whole};
 use crate::new::utils::match_byte_digit;
 use crate::new::Value;
 
+macro_rules!fraction_stretch{
+    (u8)=>{2};
+    (u16)=>{3};
+    (u32)=>{7};
+    (u64)=>{10};
+    (u128)=>{19};
+    (usize)=>{
+        if cfg!(target_pointer_width="64"){10}
+        else{7}
+    }
+}
+
 macro_rules!from_str_types{
-    ($whole_type:ty,$fraction_type:ty)=>{
+    ($whole_type:ty,$fraction_type:ident)=>{
         impl Value<$whole_type,$fraction_type>{
             pub const fn from_str(input_value_str:&str)->Self{
                 let input_value_bytes:&[u8]=input_value_str.as_bytes();
@@ -78,14 +90,7 @@ macro_rules!from_str_types{
 
                     #[cfg(feature="scaled_fraction")]
                     {
-                        let stretch:$fraction_type=match<$fraction_type>::BITS{
-                            8=>2,
-                            16=>3,
-                            32=>7,
-                            64=>10,
-                            128=>19,
-                            _=>1
-                        };
+                        let stretch:$fraction_type=fraction_stretch!($fraction_type);
 
                         let remainder_sum=fraction_base%10+stretch;
                         fraction_part=(fraction_base/10+(remainder_sum/10))*(digit);
@@ -133,9 +138,9 @@ macro_rules!from_str_types{
 }
 
 macro_rules!type_cross_product{
-    (whole_type:[];fraction_type:[$($fraction_type:ty),*])=>{};
+    (whole_type:[];fraction_type:[$($fraction_type:ident),*])=>{};
 
-    (whole_type:[$whole_type:ty$(,$whole_rest:ty)*];fraction_type:[$($fraction_type:ty),*])=>{
+    (whole_type:[$whole_type:ty$(,$whole_rest:ty)*];fraction_type:[$($fraction_type:ident),*])=>{
         $(from_str_types!($whole_type,$fraction_type);)*
         
         type_cross_product!{
@@ -148,7 +153,7 @@ macro_rules!type_cross_product{
 macro_rules!make_from_str_types{
     (
         whole_types:[$($whole_type:ty),*$(,)?],
-        fraction_types:[$($fraction_type:ty),*$(,)?]
+        fraction_types:[$($fraction_type:ident),*$(,)?]
     )=>{
         type_cross_product!{
             whole_type:[$($whole_type),*];
