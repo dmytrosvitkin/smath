@@ -1,22 +1,10 @@
 use core::fmt;
-use crate::{Fraction, Integer, UnsignedInteger, Whole};
+use crate::{Fraction,Integer,UnsignedInteger,Whole};
 use crate::new::utils::match_byte_digit;
 use crate::new::Value;
 
-macro_rules!fraction_stretch{
-    (u8)=>{2};
-    (u16)=>{3};
-    (u32)=>{7};
-    (u64)=>{10};
-    (u128)=>{19};
-    (usize)=>{
-        if cfg!(target_pointer_width="64"){10}
-        else{7}
-    }
-}
-
 macro_rules!from_str_types{
-    ($whole_type:ty,$fraction_type:ident)=>{
+    ($whole_type:ty,$fraction_type:ty,$stretch:literal)=>{
         impl Value<$whole_type,$fraction_type>{
             pub const fn from_str(input_value_str:&str)->Self{
                 let input_value_bytes:&[u8]=input_value_str.as_bytes();
@@ -90,9 +78,7 @@ macro_rules!from_str_types{
 
                     #[cfg(feature="scaled_fraction")]
                     {
-                        let stretch:$fraction_type=fraction_stretch!($fraction_type);
-
-                        let remainder_sum=fraction_base%10+stretch;
+                        let remainder_sum=fraction_base%10+$stretch;
                         fraction_part=(fraction_base/10+(remainder_sum/10))*(digit);
                         primary_quotient=(((remainder_sum%10)as u8)*digit as u8)
                     }
@@ -114,7 +100,7 @@ macro_rules!from_str_types{
 
                     index_counter+=1
                 }
-                fraction_part+=(primary_quotient/10)as $fraction_type;// 10 replaced by 9 for a while.
+                fraction_part+=(primary_quotient/10+(primary_quotient%10)/6)as $fraction_type;// 10 replaced by 9 for a while.
 
                 #[allow(unused_comparisons)]// Useful for negative signed integers.
                 if whole_part<0{
@@ -138,14 +124,14 @@ macro_rules!from_str_types{
 }
 
 macro_rules!type_cross_product{
-    (whole_type:[];fraction_type:[$($fraction_type:ident),*])=>{};
+    (whole_type:[];fraction_type:[$(($fraction_type:ty,$stretch:literal)),*])=>{};
 
-    (whole_type:[$whole_type:ty$(,$whole_rest:ty)*];fraction_type:[$($fraction_type:ident),*])=>{
-        $(from_str_types!($whole_type,$fraction_type);)*
+    (whole_type:[$whole_type:ty$(,$whole_rest:ty)*];fraction_type:[$(($fraction_type:ty,$stretch:literal)),*])=>{
+        $(from_str_types!($whole_type,$fraction_type,$stretch);)*
         
         type_cross_product!{
             whole_type:[$($whole_rest),*];
-            fraction_type:[$($fraction_type),*]
+            fraction_type:[$(($fraction_type,$stretch)),*]
         }
     };
 }
@@ -153,18 +139,53 @@ macro_rules!type_cross_product{
 macro_rules!make_from_str_types{
     (
         whole_types:[$($whole_type:ty),*$(,)?],
-        fraction_types:[$($fraction_type:ident),*$(,)?]
+        fraction_types:[$(($fraction_type:ty,$stretch:literal)),*$(,)?]
     )=>{
         type_cross_product!{
             whole_type:[$($whole_type),*];
-            fraction_type:[$($fraction_type),*]
+            fraction_type:[$(($fraction_type,$stretch)),*]
         }
     }
 }
 
+#[cfg(target_pointer_width="32")]
 make_from_str_types!{
-    whole_types:[u8,i8,u16,i16,u32,i32,u64,i64,u128,i128,usize,isize],
-    fraction_types:[u8,u16,u32,u64,u128,usize]
+    whole_types:[
+        u8,i8,
+        u16,i16,
+        u32,i32,
+        u64,i64,
+        u128,i128,
+        usize,isize
+    ],
+    fraction_types:[
+        (u8,1),
+        (u16,3),
+        (u32,6),
+        (u64,10),
+        (u128,18),
+        (usize,6)
+    ]
+}
+
+#[cfg(target_pointer_width="64")]
+make_from_str_types!{
+    whole_types:[
+        u8,i8,
+        u16,i16,
+        u32,i32,
+        u64,i64,
+        u128,i128,
+        usize,isize
+    ],
+    fraction_types:[
+        (u8,1),
+        (u16,3),
+        (u32,6),
+        (u64,10),
+        (u128,18),
+        (usize,10)
+    ]
 }
 
 #[macro_export]
