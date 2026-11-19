@@ -37,18 +37,19 @@ macro_rules!impl_to_bytes_types{
                     let mut raw_fraction:$fraction_type=self.as_raw();
                     let mut result:[u8;$result_array_length]=[0;$result_array_length];
                     let mut index_counter:usize=1;
+                    let mut remainder:$fraction_type=raw_fraction;
+                    let fraction_type_max:$fraction_type=<$fraction_type>::MAX;
 
-                    if raw_fraction==0{
-                        result[$result_array_length-1]=match_digit_byte(0);
-                    }
-                    else{
-                        while index_counter<$result_array_length+1&&raw_fraction!=0{
-                            let raw_fraction_digit_byte:u8=match_digit_byte((raw_fraction%10)as u8);
-                            raw_fraction/=10;
-                            result[$result_array_length-index_counter]=raw_fraction_digit_byte;
-                            index_counter+=1;
+                    while index_counter<$result_array_length+1{
+                        let tenth:$fraction_type=fraction_type_max/10;
+                        let quotient:$fraction_type=fraction_type_max;
+                        let mut fit_counter:$fraction_type=0;
+                        while tenth*fit_counter+(quotient*fit_counter)/10<remainder{
+                            remainder=fraction_type_max-tenth*fit_counter+(quotient*fit_counter)/10;
+                            fit_counter+=1
                         }
-                        index_counter-=1
+                        index_counter+=1;
+                        result[index_counter]=match_digit_byte(fit_counter as u8);
                     }
 
                     (result,index_counter)
