@@ -31,11 +31,11 @@ pub(crate)const fn match_digit_byte(digit:u8)->u8{
 }
 
 pub(crate)const unsafe fn trim_bytes_unchecked<'a,const S:usize>(untrimmed_bytes:&'a([u8;S],usize))->&'a[u8]{
-    unsafe{untrimmed_bytes.0.split_at_unchecked(S-untrimmed_bytes.1).1}
+    unsafe{untrimmed_bytes.0.split_at_unchecked(untrimmed_bytes.1).0}
 }
 
 pub(crate)const fn trim_bytes<'a,const S:usize>(untrimmed_bytes:&'a([u8;S],usize))->&'a[u8]{
-    untrimmed_bytes.0.split_at(S-untrimmed_bytes.1).1}
+    untrimmed_bytes.0.split_at(untrimmed_bytes.1).0}
 
 pub(crate)const fn bytes_as_str<'a,const S:usize>(untrimmed_bytes:&'a([u8;S],usize))->&'a str{
     unsafe{core::str::from_utf8_unchecked(trim_bytes(untrimmed_bytes))}

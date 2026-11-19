@@ -1,5 +1,6 @@
 use core::fmt;
 use crate::new::traits::{Integer, UnsignedInteger};
+use crate::new::utils::bytes_as_str;
 
 use super::whole::Whole;
 use super::fraction::Fraction;
@@ -105,8 +106,10 @@ impl<W:Integer+fmt::Display,F:UnsignedInteger+fmt::Display>Value<W,F>{
     }
 }
 
-impl<W:Integer+fmt::Display,F:UnsignedInteger+fmt::Display>fmt::Display for Value<W,F>{
+//impl<W:Integer+fmt::Display,F:UnsignedInteger+fmt::Display>fmt::Display for Value<W,F>
+
+impl fmt::Display for Value<i32,u32>{
     fn fmt(&self,f:&mut fmt::Formatter<'_>)->fmt::Result{
-        write!(f,"{}.{}",self.raw_whole_part(),self.raw_fraction_part())
+        write!(f,"{}.{}",self.raw_whole_part(),bytes_as_str(&self.fraction_part().to_bytes()))
     }
 }
