@@ -139,27 +139,6 @@ macro_rules!make_from_str_types{
     }
 }
 
-#[cfg(target_pointer_width="32")]
-make_from_str_types!{
-    whole_types:[
-        u8,i8,
-        u16,i16,
-        u32,i32,
-        u64,i64,
-        u128,i128,
-        usize,isize
-    ],
-    fraction_types:[
-        (u8,1),
-        (u16,3),
-        (u32,6),
-        (u64,10),
-        (u128,18),
-        (usize,6)
-    ]
-}
-
-#[cfg(target_pointer_width="64")]
 make_from_str_types!{
     whole_types:[
         u8,i8,
