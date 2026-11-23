@@ -4,101 +4,69 @@ use crate::{Fraction,Integer,UnsignedInteger,Whole};
 use crate::new::utils::match_byte_digit;
 use crate::new::Value;
 
+impl Value<i16,u16>{
+    pub const fn from_str_16(input_value_str:&str)->Self{
+        let input_value_bytes:&[u8]=input_value_str.as_bytes();
+        let input_value_bytes_len:usize=input_value_bytes.len();
+
+        if input_value_bytes_len==0{panic!("Number length has to be larger than 0!")}
+        else if input_value_bytes_len==1&&input_value_bytes[0]==b'-'{panic!("Negative number must contain at least 1 digit!")}
+
+        let mut whole_part:i16=0;
+        let mut fraction_part:u16=0;
+
+        let mut whole_index_counter:usize=0;
+        let mut fraction_index_counter:usize=0;
+        let mut is_negative:bool=false;// for -0.x cases.
+
+        {
+            if input_value_bytes[0]==b'-'{
+                is_negative=true;
+                whole_index_counter+=1;
+                
+                while whole_index_counter<input_value_bytes_len{
+                    let input_value_byte:u8=input_value_bytes[whole_index_counter];
+                    if input_value_byte==b'.'{break}
+                    let digit:u8=match_byte_digit(input_value_byte);
+
+                    if whole_part<(i16::MIN+digit as i16)/10{panic!("Integer underflow!")}
+                    whole_part*=10;
+                    whole_part-=digit as i16;
+
+                    whole_index_counter+=1
+                }
+            }
+            else{
+                while whole_index_counter<input_value_bytes_len{
+                    let input_value_byte:u8=input_value_bytes[whole_index_counter];
+                    if input_value_byte==b'.'{break}
+                    let digit:u8=match_byte_digit(input_value_byte);
+
+                    if whole_part>(i16::MAX-digit as i16)/10{panic!("Integer Overflow!")}
+                    whole_part*=10;
+                    whole_part+=digit as i16;
+
+                    whole_index_counter+=1
+                }
+            }
+        }
+
+        Self::from_raw_parts(
+            whole_part,
+            fraction_part
+        )
+    }
+}
+
 macro_rules!from_str_types{
     ($whole_type:ty,$fraction_type:ty)=>{
         impl Value<$whole_type,$fraction_type>{
             pub const fn from_str(input_value_str:&str)->Self{
-                let input_value_bytes:&[u8]=input_value_str.as_bytes();
-                let input_value_bytes_len:usize=input_value_bytes.len();
-
-                if input_value_bytes_len==0{panic!("The value cannot be empty.")}//compile_error!("The value cannot be empty.")}
-
-                let mut index_counter:usize=0;
-                let mut is_negative:bool=false;
-
-                if input_value_bytes[0]==b'-'{
-                    if input_value_bytes_len==1{panic!("The value cannot consist of only `-`")}
-                    is_negative=true;
-                    index_counter+=1
-                }
-
-                let whole_type_min:$whole_type=<$whole_type>::MIN;
-                let whole_type_max:$whole_type=<$whole_type>::MAX;
-                let fraction_type_max:$fraction_type=<$fraction_type>::MAX;
-
-                let mut whole_part:$whole_type=0;
-                let mut fraction_part:$fraction_type=0;
-                let mut fraction_base:$fraction_type=fraction_type_max;
-
-                let mut primary_quotient:u8=0;
-
-                if is_negative{
-                    while index_counter<input_value_bytes_len{
-                        let input_value_byte:u8=input_value_bytes[index_counter];
-
-                        if input_value_byte==b'.'{
-                            index_counter+=1;
-                            break
-                        }
-
-                        let digit:i8=match_byte_digit(input_value_byte)as i8;
-
-                        if whole_part<whole_type_min/10||(whole_part==whole_type_min/10&&digit>-(whole_type_min as i8%10)){panic!("Integer Underflow.")}
-                        whole_part*=10;whole_part-=digit as $whole_type;
-
-                        index_counter+=1
-                    }
-                }
-
-                else{
-                    while index_counter<input_value_bytes_len{
-                        let input_value_byte:u8=input_value_bytes[index_counter];
-
-                        if input_value_byte==b'.'{
-                            index_counter+=1;
-                            break
-                        }
-
-                        let digit:u8=match_byte_digit(input_value_byte);
-
-                        if whole_part>whole_type_max/10||(whole_part==whole_type_max/10&&digit>(whole_type_max%10)as u8){panic!("Integer Overflow.")}// Overflow protection.
-                        whole_part*=10;whole_part+=digit as $whole_type;
-
-                        index_counter+=1
-                    }
-                }
-
-                while index_counter<input_value_bytes_len{
-                    let digit:$fraction_type=match_byte_digit(input_value_bytes[index_counter])as $fraction_type;
-
-                    let secondary_quotient:u8=primary_quotient%10;
-                    primary_quotient/=10;
-
-                    fraction_part+=(fraction_base/10)*(digit)+primary_quotient as $fraction_type;
-                    primary_quotient=((fraction_base%10)*digit)as u8+secondary_quotient;
-                    
-                    if fraction_base==0{break}
-                    fraction_base/=10;
-
-                    index_counter+=1
-                }
-                fraction_part+=(primary_quotient/10+(primary_quotient%10)/6)as $fraction_type;// 10 replaced by 9 for a while.
-
-                #[allow(unused_comparisons)]// Useful for negative signed integers.
-                if whole_part<0{
-                    if fraction_part!=0{
-                        if whole_part==whole_type_min{panic!("Integer Underflow")}
-                        whole_part-=1
-                    }
-
-                    fraction_part=fraction_type_max-fraction_part;
-                    if fraction_part==fraction_type_max{fraction_part=0}
-                    else{fraction_part+=1}
-                }
+                let input_value_bytes=input_value_str.as_bytes();
 
                 Self::from_raw_parts(
-                    whole_part,
-                    fraction_part
+                    0,
+                    0
                 )
             }
         }
