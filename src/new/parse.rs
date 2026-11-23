@@ -8,11 +8,11 @@ macro_rules!from_str_types{
         impl Value<$whole_type,$fraction_type>{
             pub const fn from_str(input_value_str:&str)->Self{
                 let input_value_bytes:&[u8]=input_value_str.as_bytes();
-                let input_value_bytes_len:u8=input_value_bytes.len()as u8;// `u8` is already bigger than the biggest digit's length.
+                let input_value_bytes_len:usize=input_value_bytes.len();
 
                 if input_value_bytes_len==0{panic!("The value cannot be empty.")}//compile_error!("The value cannot be empty.")}
 
-                let mut index_counter:u8=0;
+                let mut index_counter:usize=0;
                 let mut is_negative:bool=false;
 
                 if input_value_bytes[0]==b'-'{
@@ -33,7 +33,7 @@ macro_rules!from_str_types{
 
                 if is_negative{
                     while index_counter<input_value_bytes_len{
-                        let input_value_byte:u8=input_value_bytes[index_counter as usize];
+                        let input_value_byte:u8=input_value_bytes[index_counter];
 
                         if input_value_byte==b'.'{
                             index_counter+=1;
@@ -51,7 +51,7 @@ macro_rules!from_str_types{
 
                 else{
                     while index_counter<input_value_bytes_len{
-                        let input_value_byte:u8=input_value_bytes[index_counter as usize];
+                        let input_value_byte:u8=input_value_bytes[index_counter];
 
                         if input_value_byte==b'.'{
                             index_counter+=1;
@@ -68,7 +68,7 @@ macro_rules!from_str_types{
                 }
 
                 if index_counter<input_value_bytes_len{
-                    let digit:$fraction_type=match_byte_digit(input_value_bytes[index_counter as usize])as $fraction_type;
+                    let digit:$fraction_type=match_byte_digit(input_value_bytes[index_counter])as $fraction_type;
 
                     #[cfg(not(feature="scaled_fraction"))]
                     {
@@ -87,7 +87,7 @@ macro_rules!from_str_types{
                     index_counter+=1
                 }
                 while index_counter<input_value_bytes_len{
-                    let digit:$fraction_type=match_byte_digit(input_value_bytes[index_counter as usize])as $fraction_type;
+                    let digit:$fraction_type=match_byte_digit(input_value_bytes[index_counter])as $fraction_type;
 
                     let secondary_quotient:u8=primary_quotient%10;
                     primary_quotient/=10;
