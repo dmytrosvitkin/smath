@@ -1,10 +1,11 @@
+#![allow(unused_imports)]
 use core::fmt;
 use crate::{Fraction,Integer,UnsignedInteger,Whole};
 use crate::new::utils::match_byte_digit;
 use crate::new::Value;
 
 macro_rules!from_str_types{
-    ($whole_type:ty,$fraction_type:ty,$stretch:literal)=>{
+    ($whole_type:ty,$fraction_type:ty)=>{
         impl Value<$whole_type,$fraction_type>{
             pub const fn from_str(input_value_str:&str)->Self{
                 let input_value_bytes:&[u8]=input_value_str.as_bytes();
@@ -71,7 +72,7 @@ macro_rules!from_str_types{
                     let digit:$fraction_type=match_byte_digit(input_value_bytes[index_counter])as $fraction_type;
 
                     fraction_part=(fraction_base/10)*(digit);
-                    primary_quotient=((fraction_base%10+1)*digit)as u8
+                    primary_quotient=((fraction_base%10+1)*digit)as u8;
 
                     fraction_base/=10;
                     index_counter+=1
@@ -114,14 +115,14 @@ macro_rules!from_str_types{
 }
 
 macro_rules!type_cross_product{
-    (whole_type:[];fraction_type:[$(($fraction_type:ty,$stretch:literal)),*])=>{};
+    (whole_type:[];fraction_type:[$($fraction_type:ty),*])=>{};
 
-    (whole_type:[$whole_type:ty$(,$whole_rest:ty)*];fraction_type:[$(($fraction_type:ty,$stretch:literal)),*])=>{
-        $(from_str_types!($whole_type,$fraction_type,$stretch);)*
+    (whole_type:[$whole_type:ty$(,$whole_rest:ty)*];fraction_type:[$($fraction_type:ty),*])=>{
+        $(from_str_types!($whole_type,$fraction_type);)*
         
         type_cross_product!{
             whole_type:[$($whole_rest),*];
-            fraction_type:[$(($fraction_type,$stretch)),*]
+            fraction_type:[$($fraction_type),*]
         }
     };
 }
@@ -129,11 +130,11 @@ macro_rules!type_cross_product{
 macro_rules!make_from_str_types{
     (
         whole_types:[$($whole_type:ty),*$(,)?],
-        fraction_types:[$(($fraction_type:ty,$stretch:literal)),*$(,)?]
+        fraction_types:[$($fraction_type:ty),*$(,)?]
     )=>{
         type_cross_product!{
             whole_type:[$($whole_type),*];
-            fraction_type:[$(($fraction_type,$stretch)),*]
+            fraction_type:[$($fraction_type),*]
         }
     }
 }
@@ -169,12 +170,12 @@ make_from_str_types!{
         usize,isize
     ],
     fraction_types:[
-        (u8,1),
-        (u16,3),
-        (u32,6),
-        (u64,10),
-        (u128,18),
-        (usize,10)
+        u8,
+        u16,
+        u32,
+        u64,
+        u128,
+        usize,
     ]
 }
 
