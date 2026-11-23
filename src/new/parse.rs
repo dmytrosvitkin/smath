@@ -68,15 +68,6 @@ macro_rules!from_str_types{
                     }
                 }
 
-                if index_counter<input_value_bytes_len{
-                    let digit:$fraction_type=match_byte_digit(input_value_bytes[index_counter])as $fraction_type;
-
-                    fraction_part=(fraction_base/10)*(digit);
-                    primary_quotient=((fraction_base%10+1)*digit)as u8;
-
-                    fraction_base/=10;
-                    index_counter+=1
-                }
                 while index_counter<input_value_bytes_len{
                     let digit:$fraction_type=match_byte_digit(input_value_bytes[index_counter])as $fraction_type;
 
