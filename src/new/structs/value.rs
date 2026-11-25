@@ -110,6 +110,14 @@ impl<W:Integer+fmt::Display,F:UnsignedInteger+fmt::Display>Value<W,F>{
 
 impl fmt::Display for Value<i32,u32>{
     fn fmt(&self,f:&mut fmt::Formatter<'_>)->fmt::Result{
-        write!(f,"{}.{}",self.raw_whole_part(),bytes_as_str(&self.fraction_part().to_bytes()))
+        let mut raw_whole_part:i32=self.raw_whole_part();
+        let mut raw_fraction_part:u32=self.raw_fraction_part();
+        //
+        if raw_whole_part<0&&raw_fraction_part!=0{
+            raw_whole_part+=1;
+            raw_fraction_part=u32::MAX-raw_fraction_part+1
+        }
+        //
+        write!(f,"{}.{}",raw_whole_part,bytes_as_str(&Fraction::from_raw(raw_fraction_part).to_bytes()))
     }
 }
