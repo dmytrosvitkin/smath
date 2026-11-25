@@ -4,116 +4,108 @@ use crate::{Fraction,Integer,UnsignedInteger,Whole};
 use crate::new::utils::match_byte_digit;
 use crate::new::Value;
 
-impl Value<i16,u16>{
-    pub const fn from_str_16(input_value_str:&str)->Self{
-        let input_value_bytes:&[u8]=input_value_str.as_bytes();
-        let input_value_bytes_len:usize=input_value_bytes.len();
-        //
-        if input_value_bytes_len==0{panic!("Number length has to be larger than 0!")}
-        else if input_value_bytes_len==1&&input_value_bytes[0]==b'-'{panic!("Negative number must contain at least 1 digit!")}
-        //
-        let mut whole_part:i16=0;
-        let mut fraction_part:u16=0;
-        //
-        let mut whole_index_counter:usize=0;
-        let mut fraction_index_counter:usize=0;
-        let mut is_negative:bool=false;// for -0.x cases.
-        //
-        let whole_type_min:i16=i16::MIN;
-        let whole_type_max:i16=i16::MAX;
-        let fraction_type_max:u16=u16::MAX;
-
-        {
-            if input_value_bytes[0]==b'-'{
-                is_negative=true;
-                whole_index_counter+=1;
-                
-                while whole_index_counter<input_value_bytes_len{
-                    let input_value_byte:u8=input_value_bytes[whole_index_counter];
-                    //
-                    if input_value_byte==b'.'{
-                        whole_index_counter+=1;
-                        break
-                    }
-                    //
-                    let digit:u8=match_byte_digit(input_value_byte);
-                    //
-                    if whole_part<(whole_type_min+digit as i16)/10{panic!("Integer underflow!")}
-                    whole_part*=10;
-                    whole_part-=digit as i16;
-                    //
-                    whole_index_counter+=1
-                }
-            }
-            else{
-                while whole_index_counter<input_value_bytes_len{
-                    let input_value_byte:u8=input_value_bytes[whole_index_counter];
-                    //
-                    if input_value_byte==b'.'{
-                        whole_index_counter+=1;
-                        break
-                    }
-                    //
-                    let digit:u8=match_byte_digit(input_value_byte);
-                    //
-                    if whole_part>(whole_type_max-digit as i16)/10{panic!("Integer Overflow!")}
-                    whole_part*=10;
-                    whole_part+=digit as i16;
-                    //
-                    whole_index_counter+=1
-                }
-            }
-        }
-
-        {
-            let mut tenth:u16=0;
-            //
-            let scale_tenth:u16=fraction_type_max/10;// Alternatively `(fraction_type_max-9)/10+1`.
-            let scale_remainder:u16=fraction_type_max%10+1;// Alternatively `(fraction_type_max-9)%10`.
-
-            while whole_index_counter+fraction_index_counter<input_value_bytes_len{
-                let digit:u8=match_byte_digit(input_value_bytes[input_value_bytes_len-fraction_index_counter-1]);
-                //
-                let previous_fraction_part=fraction_part/10;
-                let previous_tenth=fraction_part%10;
-                //
-                let tenth_sum:u16=tenth+digit as u16*scale_remainder+previous_tenth;
-                let secondary_fraction_part=tenth_sum/10;
-                tenth=tenth_sum%10;
-                //
-                if digit as u16>(fraction_type_max-previous_fraction_part)/scale_tenth||digit as u16*scale_tenth+previous_fraction_part>fraction_type_max-secondary_fraction_part{fraction_part=fraction_type_max;break}
-                fraction_part=digit as u16*scale_tenth+previous_fraction_part+secondary_fraction_part;
-                //
-                fraction_index_counter+=1;
-            }
-            
-            if tenth>=5&&fraction_part<fraction_type_max{
-                fraction_part+=1
-            }
-        }
-
-        if is_negative&&fraction_part!=0{
-            if whole_part==whole_type_min{panic!("Integer Underflow!")}
-            whole_part-=1;
-            fraction_part=fraction_type_max-fraction_part+1
-        }
-
-        Self::from_raw_parts(
-            whole_part,
-            fraction_part
-        )
-    }
-}
-
 macro_rules!from_str_types{
     ($whole_type:ty,$fraction_type:ty)=>{
         impl Value<$whole_type,$fraction_type>{
             pub const fn from_str(input_value_str:&str)->Self{
-                let input_value_bytes=input_value_str.as_bytes();
+                let input_value_bytes:&[u8]=input_value_str.as_bytes();
+                let input_value_bytes_len:usize=input_value_bytes.len();
+                //
+                if input_value_bytes_len==0{panic!("Number length has to be larger than 0!")}
+                else if input_value_bytes_len==1&&input_value_bytes[0]==b'-'{panic!("Negative number must contain at least 1 digit!")}
+                //
+                let mut whole_part:$whole_type=0;
+                let mut fraction_part:$fraction_type=0;
+                //
+                let mut whole_index_counter:usize=0;
+                let mut fraction_index_counter:usize=0;
+                let mut is_negative:bool=false;// for -0.x cases.
+                //
+                let whole_type_min:$whole_type=<$whole_type>::MIN;
+                let whole_type_max:$whole_type=<$whole_type>::MAX;
+                let fraction_type_max:$fraction_type=<$fraction_type>::MAX;
+
+                {
+                    if input_value_bytes[0]==b'-'{
+                        is_negative=true;
+                        whole_index_counter+=1;
+                        
+                        while whole_index_counter<input_value_bytes_len{
+                            let input_value_byte:u8=input_value_bytes[whole_index_counter];
+                            //
+                            if input_value_byte==b'.'{
+                                whole_index_counter+=1;
+                                break
+                            }
+                            //
+                            let digit:u8=match_byte_digit(input_value_byte);
+                            //
+                            if whole_part<(whole_type_min+digit as $whole_type)/10{panic!("Integer underflow!")}
+                            whole_part*=10;
+                            whole_part-=digit as $whole_type;
+                            //
+                            whole_index_counter+=1
+                        }
+                    }
+                    else{
+                        while whole_index_counter<input_value_bytes_len{
+                            let input_value_byte:u8=input_value_bytes[whole_index_counter];
+                            //
+                            if input_value_byte==b'.'{
+                                whole_index_counter+=1;
+                                break
+                            }
+                            //
+                            let digit:u8=match_byte_digit(input_value_byte);
+                            //
+                            if whole_part>(whole_type_max-digit as $whole_type)/10{panic!("Integer Overflow!")}
+                            whole_part*=10;
+                            whole_part+=digit as $whole_type;
+                            //
+                            whole_index_counter+=1
+                        }
+                    }
+                }
+
+                {
+                    let mut tenth:$fraction_type=0;
+                    //
+                    let scale_tenth:$fraction_type=fraction_type_max/10;// Alternatively `(fraction_type_max-9)/10+1`.
+                    let scale_remainder:$fraction_type=fraction_type_max%10+1;// Alternatively `(fraction_type_max-9)%10`.
+
+                    while whole_index_counter+fraction_index_counter<input_value_bytes_len{
+                        let digit:u8=match_byte_digit(input_value_bytes[input_value_bytes_len-fraction_index_counter-1]);
+                        //
+                        let previous_fraction_part:$fraction_type=fraction_part/10;
+                        let previous_tenth:$fraction_type=fraction_part%10;
+                        //
+                        let tenth_sum:$fraction_type=tenth+digit as $fraction_type*scale_remainder+previous_tenth;
+                        let secondary_fraction_part:$fraction_type=tenth_sum/10;
+                        tenth=tenth_sum%10;
+                        //
+                        if digit as $fraction_type>(fraction_type_max-previous_fraction_part)/scale_tenth||digit as $fraction_type*scale_tenth+previous_fraction_part>fraction_type_max-secondary_fraction_part{
+                            fraction_part=fraction_type_max;
+                            break
+                        }
+                        fraction_part=digit as $fraction_type*scale_tenth+previous_fraction_part+secondary_fraction_part;
+                        //
+                        fraction_index_counter+=1;
+                    }
+                    
+                    if tenth>=5&&fraction_part<fraction_type_max{
+                        fraction_part+=1
+                    }
+                }
+
+                if is_negative&&fraction_part!=0{
+                    if whole_part==whole_type_min{panic!("Integer Underflow!")}
+                    whole_part-=1;
+                    fraction_part=fraction_type_max-fraction_part+1
+                }
 
                 Self::from_raw_parts(
-                    0,
-                    0
+                    whole_part,
+                    fraction_part
                 )
             }
         }
