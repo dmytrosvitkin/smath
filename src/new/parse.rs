@@ -67,9 +67,6 @@ impl Value<i16,u16>{
 
         {
             let mut tenth:u16=0;
-            let mut previous_fraction_part:u16=0;
-            let mut previous_tenth:u16=0;
-            let mut secondary_fraction_part:u16=0;
             //
             let scale_tenth:u16=fraction_type_max/10;// Alternatively `(fraction_type_max-9)/10+1`.
             let scale_remainder:u16=fraction_type_max%10+1;// Alternatively `(fraction_type_max-9)%10`.
@@ -77,11 +74,11 @@ impl Value<i16,u16>{
             while whole_index_counter+fraction_index_counter<input_value_bytes_len{
                 let digit:u8=match_byte_digit(input_value_bytes[input_value_bytes_len-fraction_index_counter-1]);
                 //
-                previous_fraction_part=fraction_part/10;
-                previous_tenth=fraction_part%10;
+                let previous_fraction_part=fraction_part/10;
+                let previous_tenth=fraction_part%10;
                 //
                 let tenth_sum:u16=tenth+digit as u16*scale_remainder+previous_tenth;
-                secondary_fraction_part=tenth_sum/10;
+                let secondary_fraction_part=tenth_sum/10;
                 tenth=tenth_sum%10;
                 //
                 if digit as u16>(fraction_type_max-previous_fraction_part)/scale_tenth||digit as u16*scale_tenth+previous_fraction_part>fraction_type_max-secondary_fraction_part{fraction_part=fraction_type_max;break}
