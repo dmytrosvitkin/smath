@@ -83,6 +83,8 @@ impl Value<i16,u16>{
                 let tenth_sum:u16=tenth+digit as u16*scale_remainder+previous_tenth;
                 secondary_fraction_part=tenth_sum/10;
                 tenth=tenth_sum%10;
+                //
+                if digit as u16>(fraction_type_max-previous_fraction_part)/scale_tenth||digit as u16*scale_tenth+previous_fraction_part>fraction_type_max-secondary_fraction_part{fraction_part=fraction_type_max;break}
                 fraction_part=digit as u16*scale_tenth+previous_fraction_part+secondary_fraction_part;
                 //
                 fraction_index_counter+=1;
