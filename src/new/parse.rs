@@ -90,7 +90,7 @@ impl Value<i16,u16>{
                 fraction_index_counter+=1;
             }
             
-            if tenth>5&&fraction_part<fraction_type_max{// Might change tenth>5 condition to tenth>=5.
+            if tenth>=5&&fraction_part<fraction_type_max{
                 fraction_part+=1
             }
         }
