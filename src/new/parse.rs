@@ -1,7 +1,7 @@
 #![allow(unused_imports)]
 use core::fmt;
 use crate::{Fraction,Integer,UnsignedInteger,Whole};
-use crate::new::utils::match_byte_digit;
+use crate::new::utils::{bytes_as_str,match_byte_digit};
 use crate::new::Value;
 
 macro_rules!from_str_types{
@@ -107,6 +107,20 @@ macro_rules!from_str_types{
                     whole_part,
                     fraction_part
                 )
+            }
+        }
+
+        impl fmt::Display for Value<$whole_type,$fraction_type>{
+            fn fmt(&self,f:&mut fmt::Formatter<'_>)->fmt::Result{
+                let mut raw_whole_part:$whole_type=self.raw_whole_part();
+                let mut raw_fraction_part:$fraction_type=self.raw_fraction_part();
+                //
+                if raw_whole_part<0&&raw_fraction_part!=0{
+                    raw_whole_part+=1;
+                    raw_fraction_part=<$fraction_type>::MAX-raw_fraction_part+1
+                }
+                //
+                write!(f,"{}.{}",raw_whole_part,bytes_as_str(&Fraction::from_raw(raw_fraction_part).to_bytes()))
             }
         }
     }
