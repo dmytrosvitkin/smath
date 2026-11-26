@@ -79,7 +79,8 @@ macro_rules!from_str_types{
                         let previous_fraction_part:$fraction_type=fraction_part/10;
                         let previous_tenth:$fraction_type=fraction_part%10;
                         //
-                        let tenth_sum:$fraction_type=tenth+digit as $fraction_type*scale_remainder+previous_tenth;
+                        let tenth_sum:$fraction_type=(tenth+5)/10+digit as $fraction_type*scale_remainder+previous_tenth;
+                        //let tenth_sum:$fraction_type=tenth+digit as $fraction_type*scale_remainder+previous_tenth;
                         let secondary_fraction_part:$fraction_type=tenth_sum/10;
                         tenth=tenth_sum%10;
                         //
