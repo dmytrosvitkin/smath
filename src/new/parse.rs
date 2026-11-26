@@ -85,6 +85,7 @@ macro_rules!from_str_types{
                         //
                         if digit as $fraction_type>(fraction_type_max-previous_fraction_part)/scale_tenth||digit as $fraction_type*scale_tenth+previous_fraction_part>fraction_type_max-secondary_fraction_part{
                             fraction_part=fraction_type_max;
+                            tenth=9
                         }
                         else{
                             fraction_part=digit as $fraction_type*scale_tenth+previous_fraction_part+secondary_fraction_part
