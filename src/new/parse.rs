@@ -71,7 +71,7 @@ macro_rules!from_str_types{
                     let mut tenth:$fraction_type=0;
                     //
                     let scale_tenth:$fraction_type=fraction_type_max/10;// Alternatively `(fraction_type_max-9)/10+1`.
-                    let scale_remainder:$fraction_type=fraction_type_max%10+1;// Alternatively `(fraction_type_max-9)%10`.
+                    let scale_remainder:$fraction_type=6;// Alternatively `(fraction_type_max-9)%10`.
 
                     while whole_index_counter+fraction_index_counter<input_value_bytes_len{
                         let digit:u8=match_byte_digit(input_value_bytes[input_value_bytes_len-fraction_index_counter-1]);
@@ -85,9 +85,10 @@ macro_rules!from_str_types{
                         //
                         if digit as $fraction_type>(fraction_type_max-previous_fraction_part)/scale_tenth||digit as $fraction_type*scale_tenth+previous_fraction_part>fraction_type_max-secondary_fraction_part{
                             fraction_part=fraction_type_max;
-                            break
                         }
-                        fraction_part=digit as $fraction_type*scale_tenth+previous_fraction_part+secondary_fraction_part;
+                        else{
+                            fraction_part=digit as $fraction_type*scale_tenth+previous_fraction_part+secondary_fraction_part
+                        }
                         //
                         fraction_index_counter+=1;
                     }
